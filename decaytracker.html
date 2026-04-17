@@ -204,40 +204,51 @@
             const response = await fetch(`/api/check?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}&region=${region}`);
             const data = await response.json();
             
-            if(data.error) {
-                rankDiv.innerText = t.error + data.error;
-            } else {
-                rankDiv.innerText = data.rank;
+            if (data.error) {
+    rankDiv.innerText = t.error + data.error;
+    decayDiv.innerHTML = ""; // Czyścimy stare info o czasie
+} else {
+    rankDiv.innerText = data.rank;
 
-                const isApex = data.rank.includes("MASTER") || data.rank.includes("GRANDMASTER") || data.rank.includes("CHALLENGER");
-                const maxDays = isApex ? 14 : 28;
-                const lastGameTs = data.deadline - (maxDays * 86400000);
-                
-                const diffMs = Date.now() - lastGameTs;
-                const dPassed = Math.floor(diffMs / 86400000);
-                const hPassed = Math.floor((diffMs % 86400000) / 3600000);
+    // SPRAWDZAMY CZY RANGĘ DOTYCZY DECAY
+    if (!data.deadline) {
+        // Jeśli nie ma deadline (Emerald i niżej)
+        decayDiv.innerHTML = `<div style="color: #00ff88; margin-top: 10px; font-weight: bold;">
+            ${currentLang === 'pl' ? 'Twoja ranga jest bezpieczna - brak decay!' : 'Your rank is safe - no decay!'}
+        </div>`;
+    } else {
+        // Jeśli jest deadline (Diamond, Master+), liczymy czas normalnie
+        const isApex = data.rank.includes("MASTER") || data.rank.includes("GRANDMASTER") || data.rank.includes("CHALLENGER");
+        const maxDays = isApex ? 14 : 28;
+        const lastGameTs = data.deadline - (maxDays * 86400000);
+        
+        const diffMs = Date.now() - lastGameTs;
+        const dPassed = Math.floor(diffMs / 86400000);
+        const hPassed = Math.floor((diffMs % 86400000) / 3600000);
 
-                const msLeft = data.deadline - Date.now();
-                const dLeft = Math.floor(msLeft / 86400000);
-                const hLeft = Math.floor((msLeft % 86400000) / 3600000);
+        const msLeft = data.deadline - Date.now();
+        const dLeft = Math.floor(msLeft / 86400000);
+        const hLeft = Math.floor((msLeft % 86400000) / 3600000);
 
-                const date = new Date(data.deadline);
-                const dateStr = date.toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-GB');
-                const timeStr = date.toLocaleTimeString(currentLang === 'pl' ? 'pl-PL' : 'en-GB', {hour: '2-digit', minute:'2-digit'});
+        const date = new Date(data.deadline);
+        const dateStr = date.toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-GB');
+        const timeStr = date.toLocaleTimeString(currentLang === 'pl' ? 'pl-PL' : 'en-GB', {hour: '2-digit', minute:'2-digit'});
 
-                decayDiv.innerHTML = `
-                    <div>${t.last}${dPassed}d ${hPassed}h ${t.daysAgo}${t.bank}${dLeft}d ${hLeft}h</div>
-                    <div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${t.playBefore}${dateStr} ${timeStr}</div>
-                `;
-                
-                const tier = data.rank.split(' ')[0].toLowerCase();
-                const img = document.createElement('img');
-                img.id = 'rankIcon';
-                img.src = `/assets/${tier}.png`; 
-                img.style.width = '140px';
-                img.style.marginBottom = '10px';
-                resultDiv.insertBefore(img, rankDiv);
-            }
+        decayDiv.innerHTML = `
+            <div>${t.last}${dPassed}d ${hPassed}h ${t.daysAgo}${t.bank}${dLeft}d ${hLeft}h</div>
+            <div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${t.playBefore}${dateStr} ${timeStr}</div>
+        `;
+    }
+
+    // Dodawanie ikony rangi (zostaje bez zmian)
+    const tier = data.rank.split(' ')[0].toLowerCase();
+    const img = document.createElement('img');
+    img.id = 'rankIcon';
+    img.src = `/assets/${tier}.png`; 
+    img.style.width = '140px';
+    img.style.marginBottom = '10px';
+    resultDiv.insertBefore(img, rankDiv);
+}
         } catch (e) {
             rankDiv.innerText = t.error + "Connection error";
         } finally {
