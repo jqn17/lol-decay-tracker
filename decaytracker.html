@@ -30,10 +30,32 @@
             padding: 0;
             font-weight: bold;
         }
+        /* Dodaj do <style> */
+select {
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    margin-bottom: 15px;
+    background: #252525;
+    color: white;
+    font-size: 1rem;
+    width: 98%; /* Dopasuj szerokość do inputa */
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
    <div class="card">
+    <h1 id="title">LoL Decay Tracker</h1>
+    
+    <select id="region">
+        <option value="euw1">Europe West (EUW)</option>
+        <option value="eun1">Europe Nordic & East (EUNE)</option>
+        <option value="na1">North America (NA)</option>
+    </select>
+
+    <input type="text" id="fullRiotId" placeholder="Nick#TAG" onkeypress="if(event.key==='Enter') checkDecay()">
+    </div>
     <h1 id="title">LoL Decay Tracker</h1>
     <input type="text" id="fullRiotId" placeholder="Nick#TAG (e.g. Sieun#KR1)" onkeypress="if(event.key==='Enter') checkDecay()">
     <button id="checkBtn" onclick="checkDecay()">Check Status</button>
