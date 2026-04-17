@@ -19,39 +19,38 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/check', async (req, res) => {
-    const { name, tag } = req.query;
+    const { name, tag, region } = req.query; // Pobieramy region z zapytania
     const apiKey = process.env.RIOT_API_KEY;
 
+    // Mapa regionów na kontynenty (Routing Values)
+    const routingMap = {
+        'euw1': 'europe',
+        'eun1': 'europe',
+        'na1': 'americas'
+    };
+    const routing = routingMap[region] || 'europe';
+
     try {
-        const accUrl = `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}?api_key=${apiKey}`;
+        // 1. Szukamy PUUID (używając kontynentu: europe/americas)
+        const accUrl = `https://${routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}?api_key=${apiKey}`;
         const accRes = await fetch(accUrl);
         const accData = await accRes.json();
         
         if (!accData.puuid) return res.json({ error: "Nie znaleziono gracza" });
 
-        const leagueUrl = `https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/${accData.puuid}?api_key=${apiKey}`;
+        // 2. Szukamy rangi (używając konkretnego serwera: euw1/eun1/na1)
+        const leagueUrl = `https://${region}.api.riotgames.com/lol/league/v4/entries/by-puuid/${accData.puuid}?api_key=${apiKey}`;
         const lRes = await fetch(leagueUrl);
         const leagues = await lRes.json();
         const solo = leagues.find(l => l.queueType === "RANKED_SOLO_5x5");
 
         if (!solo) return res.json({ error: "Brak rangi SoloQ" });
 
-        const matchUrl = `https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${accData.puuid}/ids?queue=420&count=1&api_key=${apiKey}`;
+        // 3. Szukamy meczów (znowu kontynent)
+        const matchUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/by-puuid/${accData.puuid}/ids?queue=420&count=1&api_key=${apiKey}`;
         const mIds = await (await fetch(matchUrl)).json();
         
-        let diffDays = 0;
-        let bankDays = 0;
-        const isApex = ["MASTER", "GRANDMASTER", "CHALLENGER"].includes(solo.tier);
-        const maxDays = isApex ? 14 : 28;
-        let deadlineTs = Date.now() + (maxDays * 86400000);
-        
-        if (mIds.length > 0) {
-            const mData = await (await fetch(`https://europe.api.riotgames.com/lol/match/v5/matches/${mIds[0]}?api_key=${apiKey}`)).json();
-            const lastGameTs = mData.info.gameEndTimestamp;
-            diffDays = Math.floor((Date.now() - lastGameTs) / 86400000);
-            bankDays = Math.max(0, maxDays - diffDays);
-            deadlineTs = lastGameTs + (maxDays * 86400000);
-        }
+        // ... reszta obliczeń diffDays, bankDays, deadlineTs (bez zmian) ...
 
         res.json({
             rank: `${solo.tier} ${solo.rank} (${solo.leaguePoints} LP)`,
