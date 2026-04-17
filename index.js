@@ -3,27 +3,32 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// To jest ta magiczna linijka dla Twoich zdjęć:
+// Obsługa Twoich ikon z folderu assets
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
+// Strona główna
 app.get('/', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'decaytracker.html'));
 });
+
+// Logika sprawdzania rangi i decayu
 app.get('/api/check', async (req, res) => {
     const { name, tag } = req.query;
     const apiKey = process.env.RIOT_API_KEY;
 
     try {
         const accUrl = `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}?api_key=${apiKey}`;
-        const accData = await (await fetch(accUrl)).json();
+        const accRes = await fetch(accUrl);
+        const accData = await accRes.json();
         
         if (!accData.puuid) return res.json({ error: "Nie znaleziono gracza" });
 
         const leagueUrl = `https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/${accData.puuid}?api_key=${apiKey}`;
-        const leagues = await (await fetch(leagueUrl)).json();
+        const lRes = await fetch(leagueUrl);
+        const leagues = await lRes.json();
         const solo = leagues.find(l => l.queueType === "RANKED_SOLO_5x5");
 
-        if (!solo) return res.json({ error: "Brak rangi SoloQ" });
+        if (!solo) return res.json({ error: "Brak rangi SoloQ (Master+)" });
 
         const matchUrl = `https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${accData.puuid}/ids?queue=420&count=1&api_key=${apiKey}`;
         const mIds = await (await fetch(matchUrl)).json();
@@ -42,7 +47,6 @@ app.get('/api/check', async (req, res) => {
             
             decayMsg = `Ostatnio: ${diffDays} d. temu | Bank: ${bankDays} d.`;
             
-            // Obliczanie daty następnej gry
             const deadline = new Date(lastGameTs + (maxDays * 86400000));
             nextGameMsg = `Zagraj przed: ${deadline.toLocaleDateString('pl-PL')} o ${deadline.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'})}`;
         }
@@ -53,6 +57,11 @@ app.get('/api/check', async (req, res) => {
             nextGame: nextGameMsg
         });
     } catch (e) {
-        res.json({ error: "Błąd serwera" });
+        res.json({ error: "Błąd serwera: " + e.message });
     }
+});
+
+// START SERWERA - To jest kluczowe!
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
