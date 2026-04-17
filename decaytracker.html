@@ -5,8 +5,7 @@
     <title>LoL Decay Tracker</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #0f0f0f; color: white; margin: 0; }
-        .card { background: #1a1a1a; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); text-align: center; border: 1px solid #333; width: 350px; position: relative; }
-        .lang-switch { position: absolute; top: 15px; right: 15px; cursor: pointer; background: #333; border: none; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; }
+        .card { background: #1a1a1a; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); text-align: center; border: 1px solid #333; width: 350px; }
         h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #f0f0f0; }
         input { padding: 12px; border-radius: 6px; border: 1px solid #444; margin-bottom: 15px; width: 90%; background: #252525; color: white; font-size: 1rem; }
         button { padding: 12px 25px; border-radius: 6px; border: none; background: #0070f3; color: white; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
@@ -14,19 +13,41 @@
         #result { margin-top: 25px; padding: 15px; border-radius: 8px; background: #222; min-height: 50px; display: flex; flex-direction: column; align-items: center; }
         #rankText { font-weight: bold; color: #00ff88; font-size: 1.1rem; }
         #decayText { color: #aaa; font-size: 0.9rem; margin-top: 5px; text-align: center; }
+        
+        /* Nowy kontener języków */
+        .lang-container {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .lang-link {
+            color: #0070f3;
+            cursor: pointer;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            padding: 0;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <button class="lang-switch" onclick="toggleLang()" id="langBtn">PL</button>
-        <h1 id="title">LoL Decay Tracker</h1>
-        <input type="text" id="fullRiotId" placeholder="Nick#TAG (e.g. Sieun#KR1)" onkeypress="if(event.key==='Enter') checkDecay()">
-        <button id="checkBtn" onclick="checkDecay()">Check Status</button>
-        <div id="result">
-            <div id="rankText">Enter data above</div>
-            <div id="decayText"></div>
-        </div>
+   <div class="card">
+    <h1 id="title">LoL Decay Tracker</h1>
+    <input type="text" id="fullRiotId" placeholder="Nick#TAG (e.g. Sieun#KR1)" onkeypress="if(event.key==='Enter') checkDecay()">
+    <button id="checkBtn" onclick="checkDecay()">Check Status</button>
+    
+    <div class="lang-container">
+        <span id="langLabel">Change language to:</span> 
+        <button class="lang-link" onclick="toggleLang()" id="langBtn">Polski</button>
     </div>
+
+    <div id="result">
+        <div id="rankText">Enter data above</div>
+        <div id="decayText"></div>
+    </div>
+</div>
 
     <script>
         let currentLang = localStorage.getItem('lang') || 'en';
@@ -43,7 +64,9 @@
                 last: "Last game: ",
                 daysAgo: " d. ago",
                 bank: " | Bank: ",
-                playBefore: "Play before: "
+                playBefore: "Play before: ",
+                langLabel: "Change language to: ",
+                langNext: "Polski"
             },
             pl: {
                 title: "LoL Decay Tracker",
@@ -55,8 +78,10 @@
                 formatError: "Błąd: Użyj formatu Nick#Tag",
                 last: "Ostatnio: ",
                 daysAgo: " d. temu",
-                bank: " | Zapas: ", // Zmienione z "Bank" na "Zapas"
-                playBefore: "Zagraj przed: "
+                bank: " | Zapas: ",
+                playBefore: "Zagraj przed: ",
+                langLabel: "Zmień język na: ",
+                langNext: "English"
             }
         };
 
@@ -65,9 +90,13 @@
             document.getElementById('title').innerText = t.title;
             document.getElementById('fullRiotId').placeholder = t.placeholder;
             document.getElementById('checkBtn').innerText = t.checkBtn;
-            document.getElementById('langBtn').innerText = currentLang === 'en' ? 'PL' : 'EN';
-            if (document.getElementById('rankText').innerText.includes("data") || document.getElementById('rankText').innerText.includes("dane")) {
-                document.getElementById('rankText').innerText = t.init;
+            document.getElementById('langLabel').innerText = t.langLabel;
+            document.getElementById('langBtn').innerText = t.langNext;
+            
+            // Logika odświeżania tekstu w result
+            const rankDiv = document.getElementById('rankText');
+            if (rankDiv.innerText === texts.en.init || rankDiv.innerText === texts.pl.init) {
+                rankDiv.innerText = t.init;
             }
         }
 
