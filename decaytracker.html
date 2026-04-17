@@ -28,33 +28,17 @@
 
     <script>
         async function checkDecay() {
-            const fullId = document.getElementById('fullRiotId').value.trim();
-            const rankDiv = document.getElementById('rankText');
-            const decayDiv = document.getElementById('decayText');
-            
-            if (!fullId.includes('#')) {
-                rankDiv.innerText = "Błąd: Użyj formatu Nick#Tag";
-                decayDiv.innerText = "";
-                return;
-            }
-
-            const [name, tag] = fullId.split('#');
-            rankDiv.innerText = "Ładowanie...";
-            decayDiv.innerText = "";
-
-            try {
-                const response = await fetch(`/api/check?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}`);
-                const data = await response.json();
+            const tier = data.rank.split(' ')[0].toLowerCase(); // bierze np. "master"
                 
-                if(data.error) {
-                    rankDiv.innerText = "Błąd: " + data.error;
-                } else {
-                    rankDiv.innerText = data.rank;
-                    decayDiv.innerText = data.decay;
-                }
-            } catch (e) {
-                rankDiv.innerText = "Błąd połączenia.";
-            }
+const img = document.createElement('img');
+img.id = 'rankIcon';
+// Ścieżka do Twojego folderu assets na serwerze:
+img.src = `/assets/${tier}.png`; 
+img.alt = tier;
+img.style.width = '140px'; 
+img.style.marginBottom = '10px';
+                
+resultDiv.insertBefore(img, rankDiv);
         }
     </script>
 </body>
