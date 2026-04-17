@@ -4,58 +4,96 @@
     <meta charset="UTF-8">
     <title>LoL Decay Tracker</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #0f0f0f; color: white; margin: 0; }
-        .card { 
-    background: #1a1a1a; 
-    padding: 2.5rem; 
-    border-radius: 15px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
-    text-align: center; 
-    border: 1px solid #333; 
-    width: 350px; 
-    /* KLUCZOWE ZMIANY PONIŻEJ */
-    display: flex;
-    flex-direction: column; /* Układa elementy w pionie */
-    align-items: center;    /* Centruje je w poziomie */
-    gap: 10px;              /* Dodaje równe odstępy między elementami */
-        }
-        h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #f0f0f0; }
-        input { padding: 12px; border-radius: 6px; border: 1px solid #444; margin-bottom: 15px; width: 90%; background: #252525; color: white; font-size: 1rem; }
-        button { padding: 12px 25px; border-radius: 6px; border: none; background: #0070f3; color: white; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
-        button:disabled { background: #555; cursor: not-allowed; }
-        #result { margin-top: 25px; padding: 15px; border-radius: 8px; background: #222; min-height: 50px; display: flex; flex-direction: column; align-items: center; }
-        #rankText { font-weight: bold; color: #00ff88; font-size: 1.1rem; }
-        #decayText { color: #aaa; font-size: 0.9rem; margin-top: 5px; text-align: center; }
-        
-        /* Nowy kontener języków */
-        .lang-container {
-            margin-top: 15px;
-            font-size: 0.85rem;
-            color: #888;
-        }
-        .lang-link {
-            color: #0070f3;
-            cursor: pointer;
-            text-decoration: underline;
-            background: none;
-            border: none;
-            font-size: 0.85rem;
-            padding: 0;
-            font-weight: bold;
-        }
-        /* Dodaj do <style> */
-select {
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid #444;
-    margin-bottom: 15px;
-    background: #252525;
-    color: white;
-    font-size: 1rem;
-    width: 98%; /* Dopasuj szerokość do inputa */
-    cursor: pointer;
-}
-    </style>
+    body { 
+        font-family: 'Segoe UI', sans-serif; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        height: 100vh; 
+        background: #0f0f0f; 
+        color: white; 
+        margin: 0; 
+    }
+
+    .card { 
+        background: #1a1a1a; 
+        padding: 2.5rem; 
+        border-radius: 15px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
+        text-align: center; 
+        border: 1px solid #333; 
+        width: 350px; 
+        display: flex;
+        flex-direction: column; 
+        align-items: center;    
+        gap: 5px; /* Mniejszy odstęp, bo elementy mają własne marginesy */
+    }
+
+    h1 { font-size: 1.5rem; margin-bottom: 1rem; color: #f0f0f0; width: 100%; }
+
+    /* Ujednolicenie select, input i button, żeby miały tę samą szerokość */
+    select, input, button { 
+        box-sizing: border-box;
+        width: 100%; 
+        padding: 12px; 
+        border-radius: 6px; 
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    select, input { 
+        border: 1px solid #444; 
+        background: #252525; 
+        color: white; 
+    }
+
+    select { cursor: pointer; }
+
+    button { 
+        background: #0070f3; 
+        color: white; 
+        border: none;
+        cursor: pointer; 
+        font-weight: bold; 
+        transition: background 0.3s; 
+    }
+
+    button:disabled { background: #555; cursor: not-allowed; }
+
+    #result { 
+        margin-top: 15px; 
+        padding: 15px; 
+        border-radius: 8px; 
+        background: #222; 
+        min-height: 50px; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #rankText { font-weight: bold; color: #00ff88; font-size: 1.1rem; }
+    #decayText { color: #aaa; font-size: 0.9rem; margin-top: 5px; text-align: center; }
+
+    .lang-container {
+        margin-top: 5px;
+        font-size: 0.85rem;
+        color: #888;
+        width: 100%;
+    }
+
+    .lang-link {
+        color: #0070f3;
+        cursor: pointer;
+        text-decoration: underline;
+        background: none;
+        border: none;
+        font-size: 0.85rem;
+        padding: 0;
+        font-weight: bold;
+    }
+</style>
 </head>
 <body>
    <div class="card">
