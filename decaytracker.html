@@ -4,99 +4,101 @@
     <meta charset="UTF-8">
     <title>LoL Decay Tracker</title>
     <style>
-    body { 
-        font-family: 'Segoe UI', sans-serif; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        height: 100vh; 
-        background: #0f0f0f; 
-        color: white; 
-        margin: 0; 
-    }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            background: #0f0f0f; 
+            color: white; 
+            margin: 0; 
+        }
 
-    .card { 
-        background: #1a1a1a; 
-        padding: 2.5rem; 
-        border-radius: 15px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
-        text-align: center; 
-        border: 1px solid #333; 
-        width: 350px; 
-        display: flex;
-        flex-direction: column; 
-        align-items: center;    
-        gap: 5px; /* Mniejszy odstęp, bo elementy mają własne marginesy */
-    }
+        .card { 
+            background: #1a1a1a; 
+            padding: 2.5rem; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
+            text-align: center; 
+            border: 1px solid #333; 
+            width: 350px; 
+            display: flex;
+            flex-direction: column; 
+            box-sizing: border-box;
+        }
 
-    h1 { font-size: 1.5rem; margin-bottom: 1rem; color: #f0f0f0; width: 100%; }
+        h1 { 
+            font-size: 1.5rem; 
+            margin: 0 0 1.5rem 0; 
+            color: #f0f0f0; 
+        }
 
-    /* Ujednolicenie select, input i button, żeby miały tę samą szerokość */
-    select, input, button { 
-        box-sizing: border-box;
-        width: 100%; 
-        padding: 12px; 
-        border-radius: 6px; 
-        font-size: 1rem;
-        margin-bottom: 10px;
-    }
+        select, input, button { 
+            box-sizing: border-box;
+            width: 100%; 
+            padding: 12px; 
+            border-radius: 6px; 
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: block; /* Wymusza bycie w nowej linii */
+        }
 
-    select, input { 
-        border: 1px solid #444; 
-        background: #252525; 
-        color: white; 
-    }
+        select, input { 
+            border: 1px solid #444; 
+            background: #252525; 
+            color: white; 
+            outline: none;
+        }
 
-    select { cursor: pointer; }
+        button { 
+            background: #0070f3; 
+            color: white; 
+            border: none;
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: background 0.3s; 
+            margin-bottom: 0;
+        }
 
-    button { 
-        background: #0070f3; 
-        color: white; 
-        border: none;
-        cursor: pointer; 
-        font-weight: bold; 
-        transition: background 0.3s; 
-    }
+        button:disabled { background: #555; cursor: not-allowed; }
 
-    button:disabled { background: #555; cursor: not-allowed; }
+        #result { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border-radius: 8px; 
+            background: #222; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 100%;
+            box-sizing: border-box;
+        }
 
-    #result { 
-        margin-top: 15px; 
-        padding: 15px; 
-        border-radius: 8px; 
-        background: #222; 
-        min-height: 50px; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        width: 100%;
-        box-sizing: border-box;
-    }
+        #rankText { font-weight: bold; color: #00ff88; font-size: 1.1rem; }
+        #decayText { color: #aaa; font-size: 0.9rem; margin-top: 10px; text-align: center; line-height: 1.4; }
 
-    #rankText { font-weight: bold; color: #00ff88; font-size: 1.1rem; }
-    #decayText { color: #aaa; font-size: 0.9rem; margin-top: 5px; text-align: center; }
+        .lang-container {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #888;
+        }
 
-    .lang-container {
-        margin-top: 5px;
-        font-size: 0.85rem;
-        color: #888;
-        width: 100%;
-    }
-
-    .lang-link {
-        color: #0070f3;
-        cursor: pointer;
-        text-decoration: underline;
-        background: none;
-        border: none;
-        font-size: 0.85rem;
-        padding: 0;
-        font-weight: bold;
-    }
-</style>
+        .lang-link {
+            color: #0070f3;
+            cursor: pointer;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            padding: 0;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-   <div class="card">
+
+<div class="card">
     <h1 id="title">LoL Decay Tracker</h1>
     
     <select id="region">
@@ -106,158 +108,148 @@
     </select>
 
     <input type="text" id="fullRiotId" placeholder="Nick#TAG" onkeypress="if(event.key==='Enter') checkDecay()">
-    </div>
-    <h1 id="title">LoL Decay Tracker</h1>
-    <input type="text" id="fullRiotId" placeholder="Nick#TAG (e.g. Sieun#KR1)" onkeypress="if(event.key==='Enter') checkDecay()">
+    
     <button id="checkBtn" onclick="checkDecay()">Check Status</button>
     
-    <div class="lang-container">
-        <span id="langLabel">Change language to:</span> 
-        <button class="lang-link" onclick="toggleLang()" id="langBtn">Polski</button>
-    </div>
-
     <div id="result">
         <div id="rankText">Enter data above</div>
         <div id="decayText"></div>
     </div>
+
+    <div class="lang-container">
+        <span id="langLabel">Change language to:</span> 
+        <button class="lang-link" onclick="toggleLang()" id="langBtn">Polski</button>
+    </div>
 </div>
 
-    <script>
-        let currentLang = localStorage.getItem('lang') || 'en';
+<script>
+    let currentLang = localStorage.getItem('lang') || 'en';
 
-        const texts = {
-            en: {
-                title: "LoL Decay Tracker",
-                placeholder: "Nick#TAG (e.g. Sieun#KR1)",
-                checkBtn: "Check Status",
-                checking: "Checking...",
-                init: "Enter data above",
-                error: "Error: ",
-                formatError: "Error: Use Nick#Tag format",
-                last: "Last game: ",
-                daysAgo: " d. ago",
-                bank: " | Bank: ",
-                playBefore: "Play before: ",
-                langLabel: "Change language to: ",
-                langNext: "Polski"
-            },
-            pl: {
-                title: "LoL Decay Tracker",
-                placeholder: "Nick#Tag (np. Sieun#KR1)",
-                checkBtn: "Sprawdź status",
-                checking: "Sprawdzanie...",
-                init: "Wpisz dane powyżej",
-                error: "Błąd: ",
-                formatError: "Błąd: Użyj formatu Nick#Tag",
-                last: "Ostatnio: ",
-                daysAgo: " d. temu",
-                bank: " | Zapas: ",
-                playBefore: "Zagraj przed: ",
-                langLabel: "Zmień język na: ",
-                langNext: "English"
-            }
-        };
+    const texts = {
+        en: {
+            title: "LoL Decay Tracker",
+            placeholder: "Nick#TAG (e.g. Sieun#KR1)",
+            checkBtn: "Check Status",
+            checking: "Checking...",
+            init: "Enter data above",
+            error: "Error: ",
+            formatError: "Error: Use Nick#Tag format",
+            last: "Last game: ",
+            daysAgo: " ago",
+            bank: " | Bank: ",
+            playBefore: "Play before: ",
+            langLabel: "Change language to: ",
+            langNext: "Polski"
+        },
+        pl: {
+            title: "LoL Decay Tracker",
+            placeholder: "Nick#Tag (np. Sieun#KR1)",
+            checkBtn: "Sprawdź status",
+            checking: "Sprawdzanie...",
+            init: "Wpisz dane powyżej",
+            error: "Błąd: ",
+            formatError: "Błąd: Użyj formatu Nick#Tag",
+            last: "Ostatnio: ",
+            daysAgo: " temu",
+            bank: " | Zapas: ",
+            playBefore: "Zagraj przed: ",
+            langLabel: "Zmień język na: ",
+            langNext: "English"
+        }
+    };
 
-        function updateUI() {
-            const t = texts[currentLang];
-            document.getElementById('title').innerText = t.title;
-            document.getElementById('fullRiotId').placeholder = t.placeholder;
-            document.getElementById('checkBtn').innerText = t.checkBtn;
-            document.getElementById('langLabel').innerText = t.langLabel;
-            document.getElementById('langBtn').innerText = t.langNext;
-            
-            // Logika odświeżania tekstu w result
-            const rankDiv = document.getElementById('rankText');
-            if (rankDiv.innerText === texts.en.init || rankDiv.innerText === texts.pl.init) {
-                rankDiv.innerText = t.init;
-            }
+    function updateUI() {
+        const t = texts[currentLang];
+        document.getElementById('title').innerText = t.title;
+        document.getElementById('fullRiotId').placeholder = t.placeholder;
+        document.getElementById('checkBtn').innerText = t.checkBtn;
+        document.getElementById('langLabel').innerText = t.langLabel;
+        document.getElementById('langBtn').innerText = t.langNext;
+        
+        const rankDiv = document.getElementById('rankText');
+        if (rankDiv.innerText.includes("Enter") || rankDiv.innerText.includes("Wpisz")) {
+            rankDiv.innerText = t.init;
+        }
+    }
+
+    function toggleLang() {
+        currentLang = currentLang === 'en' ? 'pl' : 'en';
+        localStorage.setItem('lang', currentLang);
+        updateUI();
+    }
+
+    async function checkDecay() {
+        const btn = document.getElementById('checkBtn');
+        const t = texts[currentLang];
+        const fullId = document.getElementById('fullRiotId').value.trim();
+        const region = document.getElementById('region').value;
+        const rankDiv = document.getElementById('rankText');
+        const decayDiv = document.getElementById('decayText');
+        const resultDiv = document.getElementById('result');
+        
+        if (!fullId.includes('#')) {
+            rankDiv.innerText = t.formatError;
+            return;
         }
 
-        function toggleLang() {
-            currentLang = currentLang === 'en' ? 'pl' : 'en';
-            localStorage.setItem('lang', currentLang);
-            updateUI();
-        }
+        btn.disabled = true;
+        btn.innerText = t.checking;
+        rankDiv.innerText = t.checking;
 
-        async function checkDecay() {
-            const btn = document.getElementById('checkBtn');
-            const t = texts[currentLang];
-            const fullId = document.getElementById('fullRiotId').value.trim();
-            const rankDiv = document.getElementById('rankText');
-            const decayDiv = document.getElementById('decayText');
-            const resultDiv = document.getElementById('result');
+        const oldImg = document.getElementById('rankIcon');
+        if(oldImg) oldImg.remove();
+
+        try {
+            const [name, tag] = fullId.split('#');
+            const response = await fetch(`/api/check?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}&region=${region}`);
+            const data = await response.json();
             
-            if (!fullId.includes('#')) {
-                rankDiv.innerText = t.formatError;
-                return;
-            }
+            if(data.error) {
+                rankDiv.innerText = t.error + data.error;
+            } else {
+                rankDiv.innerText = data.rank;
 
-            btn.disabled = true;
-            btn.innerText = t.checking;
-            rankDiv.innerText = t.checking;
-
-            const oldImg = document.getElementById('rankIcon');
-            if(oldImg) oldImg.remove();
-
-            try {
-                const [name, tag] = fullId.split('#');
-                // Wewnątrz funkcji checkDecay() zmień linijkę z fetch:
-                const region = document.getElementById('region').value;
-                const response = await fetch(`/api/check?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}&region=${region}`);
-                const data = await response.json();
+                const isApex = data.rank.includes("MASTER") || data.rank.includes("GRANDMASTER") || data.rank.includes("CHALLENGER");
+                const maxDays = isApex ? 14 : 28;
+                const lastGameTs = data.deadline - (maxDays * 86400000);
                 
-                if(data.error) {
-                    rankDiv.innerText = t.error + data.error;
-                } else {
-                    rankDiv.innerText = data.rank;
+                const diffMs = Date.now() - lastGameTs;
+                const dPassed = Math.floor(diffMs / 86400000);
+                const hPassed = Math.floor((diffMs % 86400000) / 3600000);
 
-                    // 1. Obliczamy różnicę czasu od ostatniego meczu (ile minęło)
-                    const isApex = data.rank.includes("MASTER") || data.rank.includes("GRANDMASTER") || data.rank.includes("CHALLENGER");
-                    const maxDays = isApex ? 14 : 28;
-                    const lastGameTs = data.deadline - (maxDays * 86400000);
-                    
-                    const diffMs = Date.now() - lastGameTs;
-                    const dPassed = Math.floor(diffMs / 86400000);
-                    const hPassed = Math.floor((diffMs % 86400000) / 3600000);
+                const msLeft = data.deadline - Date.now();
+                const dLeft = Math.floor(msLeft / 86400000);
+                const hLeft = Math.floor((msLeft % 86400000) / 3600000);
 
-                    // 2. Obliczamy ile DOKŁADNIE zostało zapasu (ile zostało)
-                    const msLeft = data.deadline - Date.now();
-                    const dLeft = Math.floor(msLeft / 86400000);
-                    const hLeft = Math.floor((msLeft % 86400000) / 3600000);
+                const date = new Date(data.deadline);
+                const dateStr = date.toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-GB');
+                const timeStr = date.toLocaleTimeString(currentLang === 'pl' ? 'pl-PL' : 'en-GB', {hour: '2-digit', minute:'2-digit'});
 
-                    // 3. Formatujemy datę deadline'u dla użytkownika
-                    const date = new Date(data.deadline);
-                    const dateStr = date.toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-GB');
-                    const timeStr = date.toLocaleTimeString(currentLang === 'pl' ? 'pl-PL' : 'en-GB', {hour: '2-digit', minute:'2-digit'});
-
-                    // 4. Wyświetlamy wszystko z godzinami
-                    decayDiv.innerHTML = `
-                        <div>${t.last}${dPassed}d ${hPassed}h ${t.daysAgo}${t.bank}${dLeft}d ${hLeft}h</div>
-                        <div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${t.playBefore}${dateStr} ${timeStr}</div>
-                    `;
-                    
-                    // Dodanie ikony (zostaje bez zmian)
-                    const tier = data.rank.split(' ')[0].toLowerCase();
-                    const img = document.createElement('img');
-                    img.id = 'rankIcon';
-                    img.src = `/assets/${tier}.png`; 
-                    img.style.width = '160px';
-                    img.style.height = '160px';
-                    img.style.objectFit = 'contain';
-                    img.style.marginBottom = '10px';
-                    resultDiv.insertBefore(img, rankDiv);
-                }
-            } catch (e) {
-                rankDiv.innerText = t.error + "Server connection";
-            } finally {
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerText = t.checkBtn;
-                }, 2000);
+                decayDiv.innerHTML = `
+                    <div>${t.last}${dPassed}d ${hPassed}h ${t.daysAgo}${t.bank}${dLeft}d ${hLeft}h</div>
+                    <div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${t.playBefore}${dateStr} ${timeStr}</div>
+                `;
+                
+                const tier = data.rank.split(' ')[0].toLowerCase();
+                const img = document.createElement('img');
+                img.id = 'rankIcon';
+                img.src = `/assets/${tier}.png`; 
+                img.style.width = '140px';
+                img.style.marginBottom = '10px';
+                resultDiv.insertBefore(img, rankDiv);
             }
+        } catch (e) {
+            rankDiv.innerText = t.error + "Connection error";
+        } finally {
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerText = t.checkBtn;
+            }, 2000);
         }
+    }
 
-        updateUI(); // Inicjalizacja języka na start
-    </script>
+    updateUI();
+</script>
+
 </body>
 </html>
