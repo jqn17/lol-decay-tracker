@@ -150,7 +150,9 @@ select {
 
             try {
                 const [name, tag] = fullId.split('#');
-                const response = await fetch(`/api/check?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}`);
+                // Wewnątrz funkcji checkDecay() zmień linijkę z fetch:
+                const region = document.getElementById('region').value;
+                const response = await fetch(`/api/check?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}&region=${region}`);
                 const data = await response.json();
                 
                 if(data.error) {
