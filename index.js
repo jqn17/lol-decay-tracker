@@ -1,3 +1,14 @@
+const express = require('express');
+const path = require('path');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// To jest ta magiczna linijka dla Twoich zdjęć:
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'decaytracker.html'));
+});
 app.get('/api/check', async (req, res) => {
     const { name, tag } = req.query;
     const apiKey = process.env.RIOT_API_KEY;
