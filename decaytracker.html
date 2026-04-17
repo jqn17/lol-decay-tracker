@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <title>LoL Decay Tracker</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #0f0f0f; color: white; margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #0f0f0f; color: white; margin: 0; }
         .card { background: #1a1a1a; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); text-align: center; border: 1px solid #333; width: 350px; }
         h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #f0f0f0; }
         input { padding: 12px; border-radius: 6px; border: 1px solid #444; margin-bottom: 15px; width: 90%; background: #252525; color: white; font-size: 1rem; }
         button { padding: 12px 25px; border-radius: 6px; border: none; background: #0070f3; color: white; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
         button:hover { background: #0051ad; }
-        #result { margin-top: 25px; padding: 15px; border-radius: 8px; background: #222; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
-        .rank { color: #00ff88; font-weight: bold; margin-bottom: 5px; }
-        .decay { color: #aaa; font-size: 0.9rem; }
+        #result { margin-top: 25px; padding: 15px; border-radius: 8px; background: #222; min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #rankText { font-weight: bold; color: #00ff88; font-size: 1.1rem; }
+        #decayText { color: #aaa; font-size: 0.9rem; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -28,17 +28,54 @@
 
     <script>
         async function checkDecay() {
-            const tier = data.rank.split(' ')[0].toLowerCase(); // bierze np. "master"
+            const fullId = document.getElementById('fullRiotId').value.trim();
+            const rankDiv = document.getElementById('rankText');
+            const decayDiv = document.getElementById('decayText');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fullId.includes('#')) {
+                rankDiv.innerText = "Błąd: Użyj formatu Nick#Tag";
+                decayDiv.innerHTML = "";
+                return;
+            }
+
+            const [name, tag] = fullId.split('#');
+            rankDiv.innerText = "Ładowanie...";
+            decayDiv.innerHTML = "";
+
+            // Usuwamy starą ikonę przed nowym wyszukiwaniem
+            const oldImg = document.getElementById('rankIcon');
+            if(oldImg) oldImg.remove();
+
+            try {
+                // Pobieramy dane z Twojego API na Renderze
+                const response = await fetch(`/api/check?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}`);
+                const data = await response.json();
                 
-const img = document.createElement('img');
-img.id = 'rankIcon';
-// Ścieżka do Twojego folderu assets na serwerze:
-img.src = `/assets/${tier}.png`; 
-img.alt = tier;
-img.style.width = '140px'; 
-img.style.marginBottom = '10px';
-                
-resultDiv.insertBefore(img, rankDiv);
+                if(data.error) {
+                    rankDiv.innerText = "Błąd: " + data.error;
+                } else {
+                    // 1. Wyświetlamy tekst
+                    rankDiv.innerText = data.rank;
+                    decayDiv.innerHTML = `<div>${data.decay}</div><div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${data.nextGame}</div>`;
+                    
+                    // 2. Dodajemy obrazek z Twojego folderu assets
+                    const tier = data.rank.split(' ')[0].toLowerCase();
+                    const img = document.createElement('img');
+                    img.id = 'rankIcon';
+                    img.src = `/assets/${tier}.png`; 
+                    img.alt = tier;
+                    img.style.width = '160px'; // Rozmiar dopasowany do Twoich grafik 1000x1000
+                    img.style.height = '160px';
+                    img.style.objectFit = 'contain';
+                    img.style.marginBottom = '10px';
+                    
+                    // Wstawiamy obrazek nad tekst rangi
+                    resultDiv.insertBefore(img, rankDiv);
+                }
+            } catch (e) {
+                rankDiv.innerText = "Błąd połączenia z serwerem.";
+            }
         }
     </script>
 </body>
