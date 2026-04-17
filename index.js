@@ -19,10 +19,9 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/check', async (req, res) => {
-    const { name, tag, region } = req.query; // Pobieramy region z zapytania
+    const { name, tag, region } = req.query;
     const apiKey = process.env.RIOT_API_KEY;
 
-    // Mapa regionów na kontynenty (Routing Values)
     const routingMap = {
         'euw1': 'europe',
         'eun1': 'europe',
@@ -31,26 +30,48 @@ app.get('/api/check', async (req, res) => {
     const routing = routingMap[region] || 'europe';
 
     try {
-        // 1. Szukamy PUUID (używając kontynentu: europe/americas)
-        const accUrl = `https://${routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}?api_key=${apiKey}`;
-        const accRes = await fetch(accUrl);
+        // 1. Szukamy PUUID
+        const accRes = await fetch(`https://${routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(name)}/${encodeURIComponent(tag)}?api_key=${apiKey}`);
         const accData = await accRes.json();
         
         if (!accData.puuid) return res.json({ error: "Nie znaleziono gracza" });
 
-        // 2. Szukamy rangi (używając konkretnego serwera: euw1/eun1/na1)
-        const leagueUrl = `https://${region}.api.riotgames.com/lol/league/v4/entries/by-puuid/${accData.puuid}?api_key=${apiKey}`;
-        const lRes = await fetch(leagueUrl);
+        // 2. Szukamy rangi
+        const lRes = await fetch(`https://${region}.api.riotgames.com/lol/league/v4/entries/by-puuid/${accData.puuid}?api_key=${apiKey}`);
         const leagues = await lRes.json();
         const solo = leagues.find(l => l.queueType === "RANKED_SOLO_5x5");
 
         if (!solo) return res.json({ error: "Brak rangi SoloQ" });
 
-        // 3. Szukamy meczów (znowu kontynent)
-        const matchUrl = `https://${routing}.api.riotgames.com/lol/match/v5/matches/by-puuid/${accData.puuid}/ids?queue=420&count=1&api_key=${apiKey}`;
-        const mIds = await (await fetch(matchUrl)).json();
+        // 3. Sprawdzamy mecze (tylko SoloQ - queue 420)
+        const mIds = await (await fetch(`https://${routing}.api.riotgames.com/lol/match/v5/matches/by-puuid/${accData.puuid}/ids?queue=420&count=1&api_key=${apiKey}`)).json();
         
-        // ... reszta obliczeń diffDays, bankDays, deadlineTs (bez zmian) ...
+        // --- LOGIKA DECAY ---
+        const isApex = ["MASTER", "GRANDMASTER", "CHALLENGER"].includes(solo.tier);
+        const isDiamond = solo.tier === "DIAMOND";
+        const hasDecay = isApex || isDiamond;
+
+        // Limity: Apex 14 dni, Diamond 28 dni
+        const maxDays = isApex ? 14 : (isDiamond ? 28 : 0);
+        
+        let diffDays = 0;
+        let bankDays = hasDecay ? 0 : "∞";
+        let deadlineTs = null;
+
+        if (hasDecay && mIds && mIds.length > 0) {
+            const mData = await (await fetch(`https://${routing}.api.riotgames.com/lol/match/v5/matches/${mIds[0]}?api_key=${apiKey}`)).json();
+            
+            if (mData && mData.info) {
+                const lastGameTs = mData.info.gameEndTimestamp;
+                const now = Date.now();
+                
+                diffDays = Math.floor((now - lastGameTs) / 86400000);
+                deadlineTs = lastGameTs + (maxDays * 86400000);
+                
+                const timeLeftMs = deadlineTs - now;
+                bankDays = Math.max(0, Math.floor(timeLeftMs / 86400000));
+            }
+        }
 
         res.json({
             rank: `${solo.tier} ${solo.rank} (${solo.leaguePoints} LP)`,
