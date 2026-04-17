@@ -3,9 +3,9 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Serwujemy plik HTML z głównego folderu
 app.get('/', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'index.html'));
+    // Musisz tu wpisać nową nazwę pliku, którą nadałeś na GitHubie
+    res.sendFile(path.join(process.cwd(), 'decaytracker.html'));
 });
 
 // Nasze API pod innym adresem
