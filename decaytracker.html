@@ -1,82 +1,139 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>LoL Decay Tracker</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #0f0f0f; color: white; margin: 0; }
-        .card { background: #1a1a1a; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); text-align: center; border: 1px solid #333; width: 350px; }
+        .card { background: #1a1a1a; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); text-align: center; border: 1px solid #333; width: 350px; position: relative; }
+        .lang-switch { position: absolute; top: 15px; right: 15px; cursor: pointer; background: #333; border: none; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; }
         h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #f0f0f0; }
         input { padding: 12px; border-radius: 6px; border: 1px solid #444; margin-bottom: 15px; width: 90%; background: #252525; color: white; font-size: 1rem; }
         button { padding: 12px 25px; border-radius: 6px; border: none; background: #0070f3; color: white; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
-        button:hover { background: #0051ad; }
-        #result { margin-top: 25px; padding: 15px; border-radius: 8px; background: #222; min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        #result { margin-top: 25px; padding: 15px; border-radius: 8px; background: #222; min-height: 50px; display: flex; flex-direction: column; align-items: center; }
         #rankText { font-weight: bold; color: #00ff88; font-size: 1.1rem; }
-        #decayText { color: #aaa; font-size: 0.9rem; margin-top: 5px; }
+        #decayText { color: #aaa; font-size: 0.9rem; margin-top: 5px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>LoL Decay Tracker</h1>
-        <input type="text" id="fullRiotId" placeholder="Nick#TAG (np. Sieun#KR1)" onkeypress="if(event.key==='Enter') checkDecay()">
-        <button onclick="checkDecay()">Sprawdź status</button>
+        <button class="lang-switch" onclick="toggleLang()" id="langBtn">PL</button>
+        <h1 id="title">LoL Decay Tracker</h1>
+        <input type="text" id="fullRiotId" placeholder="Nick#TAG (e.g. Sieun#KR1)" onkeypress="if(event.key==='Enter') checkDecay()">
+        <button id="checkBtn" onclick="checkDecay()">Check Status</button>
         <div id="result">
-            <div id="rankText">Wpisz dane powyżej</div>
+            <div id="rankText">Enter data above</div>
             <div id="decayText"></div>
         </div>
     </div>
 
     <script>
+        let currentLang = localStorage.getItem('lang') || 'en';
+
+        const texts = {
+            en: {
+                title: "LoL Decay Tracker",
+                placeholder: "Nick#TAG (e.g. Sieun#KR1)",
+                checkBtn: "Check Status",
+                checking: "Checking...",
+                init: "Enter data above",
+                error: "Error: ",
+                formatError: "Error: Use Nick#Tag format",
+                last: "Last game: ",
+                daysAgo: " d. ago",
+                bank: " | Bank: ",
+                playBefore: "Play before: "
+            },
+            pl: {
+                title: "LoL Decay Tracker",
+                placeholder: "Nick#Tag (np. Sieun#KR1)",
+                checkBtn: "Sprawdź status",
+                checking: "Sprawdzanie...",
+                init: "Wpisz dane powyżej",
+                error: "Błąd: ",
+                formatError: "Błąd: Użyj formatu Nick#Tag",
+                last: "Ostatnio: ",
+                daysAgo: " d. temu",
+                bank: " | Zapas: ", // Zmienione z "Bank" na "Zapas"
+                playBefore: "Zagraj przed: "
+            }
+        };
+
+        function updateUI() {
+            const t = texts[currentLang];
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('fullRiotId').placeholder = t.placeholder;
+            document.getElementById('checkBtn').innerText = t.checkBtn;
+            document.getElementById('langBtn').innerText = currentLang === 'en' ? 'PL' : 'EN';
+            if (document.getElementById('rankText').innerText.includes("data") || document.getElementById('rankText').innerText.includes("dane")) {
+                document.getElementById('rankText').innerText = t.init;
+            }
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'pl' : 'en';
+            localStorage.setItem('lang', currentLang);
+            updateUI();
+        }
+
         async function checkDecay() {
+            const btn = document.getElementById('checkBtn');
+            const t = texts[currentLang];
             const fullId = document.getElementById('fullRiotId').value.trim();
             const rankDiv = document.getElementById('rankText');
             const decayDiv = document.getElementById('decayText');
             const resultDiv = document.getElementById('result');
             
             if (!fullId.includes('#')) {
-                rankDiv.innerText = "Błąd: Użyj formatu Nick#Tag";
-                decayDiv.innerHTML = "";
+                rankDiv.innerText = t.formatError;
                 return;
             }
 
-            const [name, tag] = fullId.split('#');
-            rankDiv.innerText = "Ładowanie...";
-            decayDiv.innerHTML = "";
+            btn.disabled = true;
+            btn.innerText = t.checking;
+            rankDiv.innerText = t.checking;
 
-            // Usuwamy starą ikonę przed nowym wyszukiwaniem
             const oldImg = document.getElementById('rankIcon');
             if(oldImg) oldImg.remove();
 
             try {
-                // Pobieramy dane z Twojego API na Renderze
+                const [name, tag] = fullId.split('#');
                 const response = await fetch(`/api/check?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}`);
                 const data = await response.json();
                 
                 if(data.error) {
-                    rankDiv.innerText = "Błąd: " + data.error;
+                    rankDiv.innerText = t.error + data.error;
                 } else {
-                    // 1. Wyświetlamy tekst
                     rankDiv.innerText = data.rank;
-                    decayDiv.innerHTML = `<div>${data.decay}</div><div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${data.nextGame}</div>`;
+                    const date = new Date(data.deadline);
+                    const dateStr = date.toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-GB');
+                    const timeStr = date.toLocaleTimeString(currentLang === 'pl' ? 'pl-PL' : 'en-GB', {hour: '2-digit', minute:'2-digit'});
+
+                    decayDiv.innerHTML = `
+                        <div>${t.last}${data.diffDays}${t.daysAgo}${t.bank}${data.bankDays} d.</div>
+                        <div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${t.playBefore}${dateStr} ${timeStr}</div>
+                    `;
                     
-                    // 2. Dodajemy obrazek z Twojego folderu assets
                     const tier = data.rank.split(' ')[0].toLowerCase();
                     const img = document.createElement('img');
                     img.id = 'rankIcon';
                     img.src = `/assets/${tier}.png`; 
-                    img.alt = tier;
-                    img.style.width = '160px'; // Rozmiar dopasowany do Twoich grafik 1000x1000
-                    img.style.height = '160px';
-                    img.style.objectFit = 'contain';
+                    img.style.width = '160px';
                     img.style.marginBottom = '10px';
-                    
-                    // Wstawiamy obrazek nad tekst rangi
                     resultDiv.insertBefore(img, rankDiv);
                 }
             } catch (e) {
-                rankDiv.innerText = "Błąd połączenia z serwerem.";
+                rankDiv.innerText = t.error + "Server connection";
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerText = t.checkBtn;
+                }, 2000);
             }
         }
+
+        updateUI(); // Inicjalizacja języka na start
     </script>
 </body>
 </html>
