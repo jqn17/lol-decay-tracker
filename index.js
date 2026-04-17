@@ -1,7 +1,18 @@
 const express = require('express');
 const path = require('path');
+const rateLimit = require('express-rate-limit'); // Nowa linijka
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Blokada: max 10 sprawdzeń na 5 minut dla jednego adresu IP
+const limiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minut
+    max: 10, 
+    message: { error: "Zbyt dużo prób! Odpocznij chwilę." }
+});
+
+// Nakładamy blokadę tylko na endpoint API
+app.use('/api/', limiter);
 
 // Obsługa Twoich ikon z folderu assets
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
