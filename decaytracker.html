@@ -5,7 +5,19 @@
     <title>LoL Decay Tracker</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #0f0f0f; color: white; margin: 0; }
-        .card { background: #1a1a1a; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); text-align: center; border: 1px solid #333; width: 350px; }
+        .card { 
+    background: #1a1a1a; 
+    padding: 2.5rem; 
+    border-radius: 15px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7); 
+    text-align: center; 
+    border: 1px solid #333; 
+    width: 350px; 
+    /* KLUCZOWE ZMIANY PONIŻEJ */
+    display: flex;
+    flex-direction: column; /* Układa elementy w pionie */
+    align-items: center;    /* Centruje je w poziomie */
+    gap: 10px;              /* Dodaje równe odstępy między elementami */
         h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #f0f0f0; }
         input { padding: 12px; border-radius: 6px; border: 1px solid #444; margin-bottom: 15px; width: 90%; background: #252525; color: white; font-size: 1rem; }
         button { padding: 12px 25px; border-radius: 6px; border: none; background: #0070f3; color: white; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
