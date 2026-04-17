@@ -136,20 +136,32 @@
                 } else {
                     rankDiv.innerText = data.rank;
 
-                    // KLUCZOWA POPRAWKA TUTAJ:
-                    // Sprawdzamy czy data.deadline istnieje, jeśli nie - używamy aktualnej daty jako ratunku
-                    const deadlineMs = data.deadline || Date.now();
-                    const date = new Date(deadlineMs);
+                    // 1. Obliczamy różnicę czasu od ostatniego meczu (ile minęło)
+                    const isApex = data.rank.includes("MASTER") || data.rank.includes("GRANDMASTER") || data.rank.includes("CHALLENGER");
+                    const maxDays = isApex ? 14 : 28;
+                    const lastGameTs = data.deadline - (maxDays * 86400000);
                     
+                    const diffMs = Date.now() - lastGameTs;
+                    const dPassed = Math.floor(diffMs / 86400000);
+                    const hPassed = Math.floor((diffMs % 86400000) / 3600000);
+
+                    // 2. Obliczamy ile DOKŁADNIE zostało zapasu (ile zostało)
+                    const msLeft = data.deadline - Date.now();
+                    const dLeft = Math.floor(msLeft / 86400000);
+                    const hLeft = Math.floor((msLeft % 86400000) / 3600000);
+
+                    // 3. Formatujemy datę deadline'u dla użytkownika
+                    const date = new Date(data.deadline);
                     const dateStr = date.toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-GB');
                     const timeStr = date.toLocaleTimeString(currentLang === 'pl' ? 'pl-PL' : 'en-GB', {hour: '2-digit', minute:'2-digit'});
 
-                    // Używamy data.diffDays i data.bankDays - identycznie jak w index.js
+                    // 4. Wyświetlamy wszystko z godzinami
                     decayDiv.innerHTML = `
-                        <div>${t.last}${data.diffDays ?? '?'}${t.daysAgo}${t.bank}${data.bankDays ?? '0'} d.</div>
+                        <div>${t.last}${dPassed}d ${hPassed}h ${t.daysAgo}${t.bank}${dLeft}d ${hLeft}h</div>
                         <div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${t.playBefore}${dateStr} ${timeStr}</div>
                     `;
                     
+                    // Dodanie ikony (zostaje bez zmian)
                     const tier = data.rank.split(' ')[0].toLowerCase();
                     const img = document.createElement('img');
                     img.id = 'rankIcon';
