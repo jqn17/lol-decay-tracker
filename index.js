@@ -47,26 +47,34 @@ app.get('/api/check', async (req, res) => {
         let decayMsg = "Brak gier";
         let nextGameMsg = "";
         
+        let diffDays = 0;
+        let bankDays = 0;
+        let deadlineTs = Date.now();
+        
         if (mIds.length > 0) {
             const mData = await (await fetch(`https://europe.api.riotgames.com/lol/match/v5/matches/${mIds[0]}?api_key=${apiKey}`)).json();
             const lastGameTs = mData.info.gameEndTimestamp;
-            const diffDays = Math.floor((Date.now() - lastGameTs) / 86400000);
             
+            diffDays = Math.floor((Date.now() - lastGameTs) / 86400000);
             const isApex = ["MASTER", "GRANDMASTER", "CHALLENGER"].includes(solo.tier);
             const maxDays = isApex ? 14 : 28;
-            const bankDays = Math.max(0, maxDays - diffDays);
+            bankDays = Math.max(0, maxDays - diffDays);
             
-            decayMsg = `Ostatnio: ${diffDays} d. temu | Bank: ${bankDays} d.`;
-            
-            const deadline = new Date(lastGameTs + (maxDays * 86400000));
-            nextGameMsg = `Zagraj przed: ${deadline.toLocaleDateString('pl-PL')} o ${deadline.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'})}`;
+            // Obliczamy timestamp (liczbę ms)
+            deadlineTs = lastGameTs + (maxDays * 86400000);
         }
 
+        // Teraz res.json jest we właściwym miejscu i widzi zmienne
         res.json({
             rank: `${solo.tier} ${solo.rank} (${solo.leaguePoints} LP)`,
-            decay: decayMsg,
-            nextGame: nextGameMsg
+            diffDays: diffDays,      
+            bankDays: bankDays,      
+            deadline: deadlineTs 
         });
+
+    } catch (e) {
+        res.json({ error: "Błąd serwera: " + e.message });
+    }
     } catch (e) {
         res.json({ error: "Błąd serwera: " + e.message });
     }
