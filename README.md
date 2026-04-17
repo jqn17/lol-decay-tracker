@@ -1,3 +1,5 @@
+Right now avialable only for EUW server players.
+
 Page:
 https://lol-decay-tracker.onrender.com
 
