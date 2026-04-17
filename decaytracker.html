@@ -135,12 +135,18 @@
                     rankDiv.innerText = t.error + data.error;
                 } else {
                     rankDiv.innerText = data.rank;
-                    const date = new Date(data.deadline);
+
+                    // KLUCZOWA POPRAWKA TUTAJ:
+                    // Sprawdzamy czy data.deadline istnieje, jeśli nie - używamy aktualnej daty jako ratunku
+                    const deadlineMs = data.deadline || Date.now();
+                    const date = new Date(deadlineMs);
+                    
                     const dateStr = date.toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-GB');
                     const timeStr = date.toLocaleTimeString(currentLang === 'pl' ? 'pl-PL' : 'en-GB', {hour: '2-digit', minute:'2-digit'});
 
+                    // Używamy data.diffDays i data.bankDays - identycznie jak w index.js
                     decayDiv.innerHTML = `
-                        <div>${t.last}${data.diffDays}${t.daysAgo}${t.bank}${data.bankDays} d.</div>
+                        <div>${t.last}${data.diffDays ?? '?'}${t.daysAgo}${t.bank}${data.bankDays ?? '0'} d.</div>
                         <div style="color: #ff4d4d; margin-top: 10px; font-weight: bold;">${t.playBefore}${dateStr} ${timeStr}</div>
                     `;
                     
@@ -149,6 +155,8 @@
                     img.id = 'rankIcon';
                     img.src = `/assets/${tier}.png`; 
                     img.style.width = '160px';
+                    img.style.height = '160px';
+                    img.style.objectFit = 'contain';
                     img.style.marginBottom = '10px';
                     resultDiv.insertBefore(img, rankDiv);
                 }
